@@ -13,7 +13,7 @@ from kubernetes import config, client
 import pydot
 
 log_level = "INFO"
-if args.quiet is not None:
+if args.quiet:
     log_level = "WARNING"
 logging.basicConfig(level=log_level)
 
