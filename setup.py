@@ -11,8 +11,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'dependernetes = dependernetes:cli',
-            'hello = hello:cli'
+            'dependernetes = dependernetes:cli'
         ],
     },
 )

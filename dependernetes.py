@@ -1,23 +1,23 @@
 import sys
-import argparse
 import logging
-
-parser = argparse.ArgumentParser(prog="cve", description='Process CVEs', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument("--namespace", "-n",                      required=False, help="Process one specific namespace")
-parser.add_argument("--dot",       "-d",                      required=False, help="Write DOT to file")
-parser.add_argument("--svg",       "-s",                      required=False, help="Write SVG to file")
-parser.add_argument("--quiet",     "-q", action="store_true", required=False, help="Supress text output")
-args = parser.parse_args()
-
+import click
 from kubernetes import config, client
 import pydot
 
-log_level = "INFO"
-if args.quiet:
-    log_level = "WARNING"
-logging.basicConfig(level=log_level)
+@click.command()
+@click.option('--namespace', '-n', default='default', help='Namespace to analyze')
+@click.option('--quiet',     '-q', is_flag=True,      help='Suppress console output')
+@click.option('--dot',       '-d', type=click.Path(), help='Write file in dot format')
+@click.option('--svg',       '-s',                    help='Write file in svg format')
+def cli(namespace, quiet, dot, svg):
 
-def cli():
+  """Visualize dependencies between resources in a namespace"""
+  
+  log_level = "INFO"
+  if quiet:
+      log_level = "WARNING"
+  logging.basicConfig(level=log_level)
+  
   try:
       config.load_kube_config()
       namespace = config.list_kube_config_contexts()[1]["context"]["namespace"] or "default"
@@ -32,9 +32,6 @@ def cli():
   except Exception as e:
       logging.error("Failed to read kube config and communicate with API")
       raise RuntimeError(e)
-  
-  if args.namespace is not None:
-      namespace = args.namespace
   
   try:
       pod_list = v1.list_namespaced_pod(namespace)
@@ -268,7 +265,7 @@ def cli():
   # TODO: Prometheus
   # TODO: ServiceMonitor/PodMonitor
   
-  if args.dot is not None:
-      graph.write_dot(args.dot)
-  if args.svg is not None:
-      graph.write_svg(args.svg)
+  if dot is not None:
+      graph.write_dot(dot)
+  if svg is not None:
+      graph.write_svg(svg)
